@@ -141,6 +141,20 @@ Closes #42
 
 ### 破坏性变更
 
+两种标记方式（均为 Conventional Commits 标准）：
+
+**方式 1：类型后加 `!`**
+
+```
+feat!: remove deprecated endpoints
+```
+
+```
+feat(api)!: remove deprecated endpoints
+```
+
+**方式 2：Footer 中声明**
+
 ```
 feat(api): remove deprecated endpoints
 
