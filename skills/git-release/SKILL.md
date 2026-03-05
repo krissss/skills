@@ -1,11 +1,11 @@
 ---
 name: git-release
-description: 自动化 GitHub/GitLab 发布流程。使用场景：发布新版本、创建版本标签、更新 CHANGELOG。自动分析 Git 提交、更新 CHANGELOG.md、确定语义化版本号、创建 Git 标签、推送到远程并创建 Release
+description: 自动化 GitHub/GitLab/Gitea 发布流程。使用场景：发布新版本、创建版本标签、更新 CHANGELOG。自动分析 Git 提交、更新 CHANGELOG.md、确定语义化版本号、创建 Git 标签、推送到远程并创建 Release
 ---
 
-# Git 自动发布（GitHub / GitLab）
+# Git 自动发布（GitHub / GitLab / Gitea）
 
-自动化 GitHub/GitLab Release 发布流程，遵循语义化版本（Semantic Versioning）规范。自动分析 Git 提交记录并更新 CHANGELOG.md，然后确定合适的版本号并完成发布。
+自动化 GitHub/GitLab/Gitea Release 发布流程，遵循语义化版本（Semantic Versioning）规范。自动分析 Git 提交记录并更新 CHANGELOG.md，然后确定合适的版本号并完成发布。
 
 详细的 CHANGELOG 格式、Conventional Commits 规则和平台 CLI 参考见 [references/REFERENCE.md](references/REFERENCE.md)。
 
@@ -20,7 +20,9 @@ git remote get-url origin
 解析 URL 判断平台：
 - **GitHub**: `github.com` 域名 → 提取 `owner/repo`
 - **GitLab**: `gitlab.com` 或自托管域名 → 提取 `owner/repo`
-- **其他**: 通知用户此技能仅支持 GitHub/GitLab，询问是否仅执行 git tag/push
+- **其他域名**: 尝试调用 `<域名>/api/v1/version` 检测是否为 Gitea 实例
+  - 成功识别 → 作为 **Gitea** 处理，提取 `owner/repo`
+  - 检测失败 → 提示用户手动选择平台（GitHub/GitLab/Gitea/其他），或询问是否仅执行 git tag/push
 
 ### 步骤 1: 分析提交、更新 CHANGELOG 并确定版本
 
@@ -78,7 +80,7 @@ git log <hash> -1 --pretty=format:"%B"
 
 1. 将 `## [Unreleased]` 替换为 `## [X.Y.Z] - YYYY-MM-DD`
 2. 在 `## [X.Y.Z]` 上方插入新的空 `## [Unreleased]`（保持 Keep a Changelog 规范）
-3. 在文件底部添加版本比较链接（GitHub: `/compare/`，GitLab: `/-/compare/`）
+3. 在文件底部添加版本比较链接（GitHub: `/compare/`，GitLab: `/-/compare/`，Gitea: `/compare/`）
 4. 提交变更：
 
 ```bash
@@ -122,6 +124,20 @@ EOF
 
 自托管 GitLab 需先配置：`glab config set host gitlab.example.com`
 
+#### Gitea
+
+```bash
+tea releases create \
+  --tag vX.Y.Z \
+  --title "vX.Y.Z" \
+  --note "$(cat <<'EOF'
+...（格式化的 Release Notes）
+EOF
+)"
+```
+
+自托管 Gitea 需先配置：`tea login add --url=https://gitea.example.com --token=...`
+
 **认证失败时**：提供 Web UI 手动创建发布的链接，以及格式化的发布说明供复制粘贴。
 
 ## 错误处理
@@ -131,7 +147,7 @@ EOF
 | 不支持的 Git 平台 | 通知用户，询问是否仅执行 git tag/push |
 | 没有未发布变更 | 通知用户并询问是否继续 |
 | Git 工作区不干净 | 中止并要求用户先提交/暂存变更 |
-| 认证失败（gh/glab） | 提供 Web UI 备选方案和格式化内容 |
+| 认证失败（gh/glab/tea） | 提供 Web UI 备选方案和格式化内容 |
 | 推送冲突 | 指示用户先 pull/rebase 再重试 |
 | 未配置远程仓库 | 中止并要求用户先配置 |
 

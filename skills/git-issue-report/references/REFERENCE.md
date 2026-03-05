@@ -10,6 +10,7 @@
 | GitHub | `.github/ISSUE_TEMPLATE/*.md` | Markdown 模板 |
 | GitHub | `.github/ISSUE_TEMPLATE.md`（单文件） | Markdown 模板 |
 | GitLab | `.gitlab/issue_templates/*.md` | Markdown 模板 |
+| Gitea | `.gitea/issue_template/*.md` | Markdown 模板 |
 
 ### GitHub YAML 表单模板结构
 
@@ -236,6 +237,9 @@ gh label list
 
 # GitLab
 glab label list
+
+# Gitea
+tea labels list
 ```
 
 ---
@@ -256,4 +260,11 @@ gh label list                                                # 列出标签
 glab issue create --title "..." --description "..." --label "bug"   # 创建 issue
 glab issue create --title "..." --description "..." --assignee "@me" # 指派给自己
 glab label list                                                      # 列出标签
+```
+
+### Gitea
+
+```bash
+tea issues create --title "..." --body "..." --labels "bug"   # 创建 issue
+tea labels list                                                # 列出标签
 ```

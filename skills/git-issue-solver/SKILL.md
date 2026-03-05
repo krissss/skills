@@ -1,9 +1,9 @@
 ---
 name: git-issue-solver
-description: 自动化处理 GitHub/GitLab Issue 的完整工作流：获取 issue → 分支管理（含 worktree）→ 代码实现 → 提交 → 创建 PR/MR。使用场景：用户要求处理 issue、解决 bug、实现功能、贴了 issue 链接
+description: 自动化处理 GitHub/GitLab/Gitea Issue 的完整工作流：获取 issue → 分支管理（含 worktree）→ 代码实现 → 提交 → 创建 PR/MR。使用场景：用户要求处理 issue、解决 bug、实现功能、贴了 issue 链接
 ---
 
-# Git Issue Solver（GitHub / GitLab）
+# Git Issue Solver（GitHub / GitLab / Gitea）
 
 **默认行为**：用户直接调用本技能且无任何提示时，自动进入拉取 issue 列表流程。
 
@@ -17,8 +17,10 @@ git remote get-url origin
 
 解析 URL 判断平台：
 - **GitHub**: `github.com` 域名
-- **GitLab**: `gitlab.com` 或自托管 GitLab 域名
-- **其他**: 通知用户此技能仅支持 GitHub/GitLab，询问是否继续
+- **GitLab**: `gitlab.com` 或已知自托管 GitLab 域名
+- **其他域名**: 尝试调用 `<域名>/api/v1/version` 检测是否为 Gitea 实例
+  - 成功识别 → 作为 **Gitea** 处理
+  - 检测失败 → 提示用户手动选择平台（GitHub/GitLab/Gitea/其他）
 
 ### 步骤 1: 获取 Issue
 
@@ -182,7 +184,7 @@ git checkout -b fix/123-login-blank
 
 | 场景 | 处理 |
 |-----|------|
-| CLI 未安装 | 提示安装 `gh`/`glab` |
+| CLI 未安装 | 提示安装 `gh`/`glab`/`tea` |
 | 认证失败 | 提示重新登录 |
 | 分支已存在 | 建议换名或切换现有分支 |
 | Worktree 冲突 | 提示删除冲突项 |
@@ -193,5 +195,6 @@ git checkout -b fix/123-login-blank
 
 - `帮我处理 #123`
 - `https://github.com/owner/repo/issues/123`
+- `https://gitea.example.com/owner/repo/issues/456`
 - `看看有哪些待处理的 issue`
 - `处理一个高优先级的 bug`

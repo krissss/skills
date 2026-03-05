@@ -20,6 +20,15 @@ glab issue note <number> --message "..."       # 添加评论
 glab mr create --title "..." --description "Closes #<number>"  # 创建 MR
 ```
 
+### Gitea
+
+```bash
+tea issues list --state open --limit 20        # 列出 issue
+tea issues view <number>                       # 查看详情
+tea issues comment <number> --body "..."       # 添加评论
+tea pr create --title "..." --body "Closes #<number>"  # 创建 PR
+```
+
 ---
 
 ## Worktree 管理

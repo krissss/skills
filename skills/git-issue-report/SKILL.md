@@ -1,11 +1,11 @@
 ---
 name: git-issue-report
-description: 在 GitHub/GitLab 上创建格式规范的 Issue。优先使用仓库 Issue 模板，支持 Bug 报告、功能请求等类型，自动生成结构化描述。使用场景：用户要求提交 issue、报告 bug、提出功能需求
+description: 在 GitHub/GitLab/Gitea 上创建格式规范的 Issue。优先使用仓库 Issue 模板，支持 Bug 报告、功能请求等类型，自动生成结构化描述。使用场景：用户要求提交 issue、报告 bug、提出功能需求
 ---
 
-# Git Issue 创建（GitHub / GitLab）
+# Git Issue 创建（GitHub / GitLab / Gitea）
 
-在 GitHub/GitLab 上创建格式规范的 Issue，优先使用仓库已有的 Issue 模板，否则按内置类型生成结构化描述。
+在 GitHub/GitLab/Gitea 上创建格式规范的 Issue，优先使用仓库已有的 Issue 模板，否则按内置类型生成结构化描述。
 
 **默认行为**：用户直接调用本技能且未指定类型时，先检测仓库模板，有则展示模板列表，无则展示内置类型菜单。
 
@@ -22,7 +22,9 @@ git remote get-url origin
 解析 URL 判断平台：
 - **GitHub**: `github.com` 域名 → 提取 `owner/repo`
 - **GitLab**: `gitlab.com` 或自托管 GitLab 域名 → 提取 `owner/repo`
-- **其他**: 通知用户此技能仅支持 GitHub/GitLab，询问是否继续
+- **其他域名**: 尝试调用 `<域名>/api/v1/version` 检测是否为 Gitea 实例
+  - 成功识别 → 作为 **Gitea** 处理，提取 `owner/repo`
+  - 检测失败 → 提示用户手动选择平台（GitHub/GitLab/Gitea/其他）
 
 ### 步骤 1: 检测仓库 Issue 模板
 
@@ -32,6 +34,7 @@ git remote get-url origin
 ls .github/ISSUE_TEMPLATE/*.yml .github/ISSUE_TEMPLATE/*.yaml .github/ISSUE_TEMPLATE/*.md 2>/dev/null
 ls .github/ISSUE_TEMPLATE.md 2>/dev/null
 ls .gitlab/issue_templates/*.md 2>/dev/null
+ls .gitea/issue_template/*.md 2>/dev/null
 ```
 
 #### 发现仓库模板时
@@ -114,7 +117,7 @@ ls .gitlab/issue_templates/*.md 2>/dev/null
 
 | 场景 | 处理 |
 |-----|------|
-| CLI 未安装 | 提示安装 `gh`/`glab` |
+| CLI 未安装 | 提示安装 `gh`/`glab`/`tea` |
 | 认证失败 | 提示重新登录，提供 Markdown 内容供手动创建 |
 | 无远程仓库 | 中止并提示配置 |
 | 模板解析失败 | 提示模板格式异常，回退到内置类型流程 |

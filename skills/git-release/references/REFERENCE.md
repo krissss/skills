@@ -52,6 +52,12 @@
 [Unreleased]: https://gitlab.com/owner/repo/-/compare/vX.Y.Z...HEAD
 ```
 
+**Gitea**：
+```markdown
+[X.Y.Z]: https://gitea.example.com/owner/repo/compare/vA.B.C...vX.Y.Z
+[Unreleased]: https://gitea.example.com/owner/repo/compare/vX.Y.Z...HEAD
+```
+
 ## Release Notes 格式
 
 ```markdown
@@ -81,7 +87,7 @@
 4. 破坏性变更在 Changed 中使用 `**Breaking**:` 前缀
 5. 链接文本使用 `**Full Changelog**:`
 6. 空分类省略，不要输出空的分类标题
-7. GitLab 链接使用 `/-/compare/` 路径格式
+7. GitLab 链接使用 `/-/compare/` 路径格式，Gitea 链接使用 `/compare/` 路径格式（同 GitHub）
 
 ### 示例
 
@@ -167,4 +173,13 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
 
 ```bash
 glab release create vX.Y.Z --name "vX.Y.Z" --notes "..."
+```
+
+### Gitea
+
+- 需要安装 [`tea`](https://gitea.com/gitea/tea) CLI 工具（`brew install tea` / `go install code.gitea.io/tea@latest`）
+- 自托管实例需配置：`tea login add --url=https://gitea.example.com --token=...`
+
+```bash
+tea releases create --tag vX.Y.Z --title "vX.Y.Z" --note "..."
 ```
