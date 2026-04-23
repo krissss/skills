@@ -40,7 +40,7 @@ git remote get-url origin
 
 #### 方式 B：拉取 Issue 列表
 
-使用[平台 CLI 工具](references/REFERENCE.md#平台-cli-工具)列出 issue，展示格式：
+使用平台 CLI 工具列出 issue，展示格式：
 
 ```
 #123 [bug] 登录页面无法正常显示
@@ -53,7 +53,7 @@ git remote get-url origin
 
 ### 步骤 2: 展示 Issue 详情
 
-使用[平台 CLI 工具](references/REFERENCE.md#平台-cli-工具)查看 issue 详情并展示：
+使用平台 CLI 工具查看 issue 详情并展示：
 
 ```
 Issue #123: 登录页面无法正常显示
@@ -171,7 +171,11 @@ git checkout -b fix/123-login-blank
 请选择 (1/2/3):
 ```
 
-选择创建 PR/MR 时，使用[平台 CLI 工具](references/REFERENCE.md#平台-cli-工具)创建，body 中包含 `Closes #<number>` 关联 issue。
+选择创建 PR/MR 时：
+
+1. **预览 PR/MR 内容**：直接展示最终将提交的标题和正文（含 `Closes #<number>` 关联），不做额外包装
+2. 用户可要求修改，修改后重新展示
+3. **用户明确确认后**，才使用平台 CLI 工具执行创建命令
 
 如果使用了 worktree，额外提示清理命令：
 ```
@@ -188,6 +192,42 @@ git checkout -b fix/123-login-blank
 | 认证失败 | 提示重新登录 |
 | 分支已存在 | 建议换名或切换现有分支 |
 | Worktree 冲突 | 提示删除冲突项 |
+
+## 平台 CLI 命令
+
+### GitHub
+
+```bash
+gh issue list --state open --limit 20     # 列出 issue
+gh issue view <number>                     # 查看详情
+gh pr create --title "..." --body "Closes #<number>"  # 创建 PR
+```
+
+### GitLab
+
+```bash
+glab issue list --per-page 20                 # 列出 issue（默认 open）
+glab issue view <number>                       # 查看详情
+glab mr create --title "..." --description "Closes #<number>"  # 创建 MR
+```
+
+### Gitea
+
+```bash
+tea issues list --state open --limit 20        # 列出 issue
+tea issues <number>                            # 查看详情
+tea pulls create --title "..." --description "Closes #<number>"  # 创建 PR
+```
+
+## Worktree 管理
+
+```bash
+git worktree list                          # 查看所有
+git worktree remove .worktree/<name>       # 删除指定
+git worktree prune                         # 清理无效
+```
+
+> 建议将 `.worktree/` 添加到 `.gitignore`
 
 ---
 
