@@ -28,9 +28,11 @@ git remote get-url origin
 
 检测完成后记住平台信息，供后续 git 技能复用。
 
-### 步骤 1: 分析提交、更新 CHANGELOG 并确定版本
+### 步骤 1: 准备发布数据
 
-1. **获取自上次发布以来的提交**：
+收集并计算所有发布所需信息，**不执行任何写操作**。
+
+#### 1.1 获取自上次发布以来的提交
 
 先获取最新 tag：
 ```bash
@@ -52,7 +54,7 @@ git log --pretty=format:"%h %s" --reverse
 git log <hash> -1 --pretty=format:"%B"
 ```
 
-2. **解析并分类提交信息**：
+#### 1.2 解析并分类提交信息
 
 | 类型 | CHANGELOG 分类 | 说明 |
 |------|---------------|------|
@@ -68,54 +70,13 @@ git log <hash> -1 --pretty=format:"%B"
 
 **Scope 处理**：提交格式 `type(scope): description` → CHANGELOG/Release Notes 中显示为 `scope: description`
 
-**版本升级判定**：
+#### 1.3 确定版本号
+
 - 存在破坏性变更 → **MAJOR** (X.0.0)
 - 有 `feat` 类提交（无破坏性） → **MINOR** (x.Y.0)
 - 仅有 `fix` 类提交 → **PATCH** (x.y.Z)
 
-3. **更新 CHANGELOG.md**：
-
-读取现有的 CHANGELOG.md，更新 `[Unreleased]` 部分。使用 [Keep a Changelog](https://keepachangelog.com/) 格式：
-
-```markdown
-# Changelog
-
-## [Unreleased]
-
-## [1.1.0] - 2025-01-15
-
-### Added
-
-- api: 新增分页支持
-- 新增配置项
-
-### Changed
-
-- **Breaking**: 移除旧的认证方式
-
-### Fixed
-
-- auth: 修复登录超时问题
-
-## [1.0.0] - 2025-01-01
-...
-
-[Unreleased]: https://github.com/owner/repo/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/owner/repo/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/owner/repo/releases/tag/v1.0.0
-```
-
-**条目格式**：
-- scope 显示为 `scope:` 格式：`- api: 添加新接口`
-- 无 scope 直接写描述：`- 新功能描述`
-- 破坏性变更添加前缀：`- **Breaking**: 变更说明`
-
-**更新规则**：
-- `[Unreleased]` 存在且有内容 → 追加新提交到相应类别
-- `[Unreleased]` 存在但为空 → 填充分类后的提交
-- `[Unreleased]` 不存在 → 在头部创建新部分
-
-4. **向用户展示摘要并确认版本号**：
+确定版本号后先与用户确认：
 
 ```
 当前版本：1.2.3
@@ -124,11 +85,73 @@ git log <hash> -1 --pretty=format:"%B"
 - 1 个 Changed（包括 1 个破坏性变更）
 - 1 个 Fixed（Bug 修复）
 
-推荐版本：2.0.0（检测到破坏性变更）
-确认？(yes/no)
+推荐版本：v2.0.0（检测到破坏性变更）
+确认版本号？(y/输入其他版本号)
 ```
 
-### 步骤 2: 更新 CHANGELOG.md 版本信息
+用户确认版本号后才继续生成 CHANGELOG 和 Release Notes。
+
+#### 1.4 生成 CHANGELOG 内容
+
+基于分类结果，准备 CHANGELOG.md 的变更内容（在内存中生成，不写入文件）。
+
+**条目格式**：
+- scope 显示为 `scope:` 格式：`- api: 添加新接口`
+- 无 scope 直接写描述：`- 新功能描述`
+- 破坏性变更添加前缀：`- **Breaking**: 变更说明`
+
+#### 1.5 生成 Release Notes
+
+```markdown
+## What's Changed
+
+### Added
+
+- scope: 新功能描述
+
+### Fixed
+
+- scope: Bug 修复描述
+
+### Changed
+
+- **Breaking**: 破坏性变更说明
+
+**Full Changelog**: https://github.com/owner/repo/compare/vA.B.C...vX.Y.Z
+```
+
+**格式要求**：
+1. 标题固定使用 `## What's Changed`（英文，保持历史版本一致性）
+2. 分类：`### Added`（新功能）、`### Fixed`（Bug 修复）、`### Changed`（其他变更）
+3. 空分类省略，不要输出空的分类标题
+4. GitLab 链接使用 `/-/compare/` 路径格式，Gitea 链接使用 `/compare/` 路径格式（同 GitHub）
+
+### 步骤 2: 预览确认
+
+将所有发布数据一次性展示给用户：
+
+```
+📦 发布预览
+
+版本：v2.0.0（当前 v1.2.3）
+提交：分析了 X 个提交（自 v1.2.3 以来）
+
+--- CHANGELOG 变更 ---
+（展示将写入 CHANGELOG.md 的完整 diff）
+
+--- Release Notes ---
+（展示完整的 Release Notes）
+
+确认发布？可修改版本号、CHANGELOG 内容或 Release Notes。(y/n)
+```
+
+用户可要求修改任何部分，修改后重新预览，再次确认。**用户明确确认后才进入步骤 3。**
+
+### 步骤 3: 执行发布
+
+用户确认后，按顺序执行以下操作：
+
+#### 3.1 更新 CHANGELOG.md
 
 1. 将 `## [Unreleased]` 替换为 `## [X.Y.Z] - YYYY-MM-DD`
 2. 在 `## [X.Y.Z]` 上方插入新的空 `## [Unreleased]`（保持 Keep a Changelog 规范）
@@ -152,14 +175,14 @@ git log <hash> -1 --pretty=format:"%B"
 [Unreleased]: https://gitea.example.com/owner/repo/compare/vX.Y.Z...HEAD
 ```
 
-4. 提交变更：
+#### 3.2 提交 CHANGELOG
 
 ```bash
 git add CHANGELOG.md
 git commit -m "chore: release vX.Y.Z"
 ```
 
-### 步骤 3: 创建并推送标签
+#### 3.3 创建并推送标签
 
 ```bash
 git tag -a vX.Y.Z -m "Release vX.Y.Z"
@@ -173,36 +196,9 @@ git push origin <branch>
 git push origin vX.Y.Z
 ```
 
-### 步骤 4: 创建 Release
+#### 3.4 创建 Release
 
-从 CHANGELOG.md 中提取对应版本的 Added/Fixed/Changed 内容，生成 Release Notes：
-
-```markdown
-## What's Changed
-
-### Added
-
-- scope: 新功能描述 1
-- 新功能描述 2
-
-### Fixed
-
-- scope: Bug 修复描述
-
-### Changed
-
-- **Breaking**: 破坏性变更说明
-
-**Full Changelog**: https://github.com/owner/repo/compare/vA.B.C...vX.Y.Z
-```
-
-**格式要求**：
-1. 标题固定使用 `## What's Changed`（英文，保持历史版本一致性）
-2. 分类：`### Added`（新功能）、`### Fixed`（Bug 修复）、`### Changed`（其他变更）
-3. 空分类省略，不要输出空的分类标题
-4. GitLab 链接使用 `/-/compare/` 路径格式，Gitea 链接使用 `/compare/` 路径格式（同 GitHub）
-
-#### GitHub
+**GitHub**：
 
 ```bash
 gh release create vX.Y.Z \
@@ -213,7 +209,7 @@ EOF
 )"
 ```
 
-#### GitLab
+**GitLab**：
 
 ```bash
 glab release create vX.Y.Z \
@@ -226,7 +222,7 @@ EOF
 
 自托管 GitLab 需先配置：`glab config set host gitlab.example.com`
 
-#### Gitea
+**Gitea**：
 
 ```bash
 tea releases create \
