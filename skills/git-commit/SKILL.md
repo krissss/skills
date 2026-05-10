@@ -97,13 +97,18 @@ git diff --stat
 
 ### 步骤 3：提交前 Review
 
-在生成提交消息或执行提交前，必须 review 本次将提交的变更。先判断当前运行环境使用的 agent 及其能力：
+在生成提交消息或执行提交前，必须 review 本次将提交的变更。先判断当前运行环境使用的 agent 及其能力，按以下优先级执行：
 
-- **Codex、Claude Code 等带内置 review 能力的 agent**：优先使用该 agent 自带的 review 能力检查本次将提交的变更；review 范围仍遵循本步骤的提交范围规则。
+- **支持 subagent 的 agent**：必须启动独立 subagent 执行 review，避免主线程上下文、用户后续追问或已有结论干扰判断；如果 subagent 环境也支持内置 review 能力，由 subagent 优先使用内置能力。
+- **不支持 subagent，但带内置 review 能力的 agent**：使用该 agent 自带的 review 能力检查本次将提交的变更。
 - **无内置 review 能力或无法确认能力的 agent**：使用下方通用 review 规则。
 - **用户明确要求使用某种 review 方式**：遵循用户要求，同时保留下方阻塞问题处理逻辑。
 
 优先 review 暂存区；如果没有暂存内容，则 review 工作区变更；如果步骤 2 决定拆分提交，只 review 将纳入本次提交的文件。
+
+#### Subagent Review 要求
+
+使用 subagent review 时，只传递客观材料：本次提交范围、`git diff --stat`、完整 diff、相关用户需求和本步骤检查项。不要传递主线程的判断结论、期望结果或提交消息草稿。subagent 输出应优先列出阻塞问题，其次列出非阻塞风险；无问题时明确说明未发现阻塞问题。
 
 #### 通用 Review 命令
 
